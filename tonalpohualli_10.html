@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tonalpohualli — Calendario Nahua</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/* ── DESIGN TOKENS ── */
+:root {
+  --nahua-navy:        #3C4C9B;
+  --nahua-navy-dark:   #2D3A7A;
+  --nahua-navy-light:  #5868B8;
+  --nahua-green:       #15A14C;
+  --nahua-green-dark:  #0F7A39;
+  --nahua-red:         #EB415C;
+  --nahua-red-dark:    #C72E47;
+  --nahua-gold:        #B9986A;
+  --nahua-gold-dark:   #967B50;
+  --nahua-gold-light:  #D4B98B;
+  --nahua-white:       #FFFFFF;
+  --nahua-off-white:   #F5F2EC;
+  --nahua-dark:        #1A1A2E;
+  --nahua-bg:          #0F0F1A;
+  --nahua-muted:       #6B6B8A;
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-numbers: 'Space Mono', 'Courier New', monospace;
+  --font-body: system-ui, -apple-system, sans-serif;
+  --radius-pill: 100px;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--nahua-bg);
+  color: var(--nahua-white);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── LAYOUT ── */
+.app {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  grid-template-rows: 100dvh;
+  height: 100dvh;
+}
+
+@media (max-width: 768px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    height: 100dvh;
+  }
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  background: #12122A;
+  border-right: 1px solid rgba(185,152,106,0.15);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid rgba(185,152,106,0.12);
+}
+
+.brand-tag {
+  font-family: var(--font-numbers);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--nahua-gold);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+
+.brand-logo {
+  width: 160px;
+  height: auto;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.brand-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 4px;
+}
+
+/* ── HOY CARD ── */
+.hoy-card {
+  margin: 16px;
+  background: linear-gradient(135deg, var(--nahua-navy) 0%, #2a1f5a 100%);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  border: 1px solid rgba(185,152,106,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.hoy-card::before {
+  content: '';
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 80px; height: 80px;
+  background: rgba(185,152,106,0.06);
+  border-radius: 50%;
+}
+
+.hoy-label {
+  font-family: var(--font-numbers);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--nahua-gold);
+  margin-bottom: 8px;
+}
+
+.hoy-gregoriano {
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 10px;
+}
+
+.hoy-signo {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--nahua-white);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.signo-emoji {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.hoy-trecena {
+  font-family: var(--font-numbers);
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 10px;
+}
+
+.hoy-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-numbers);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.badge--navy  { background: rgba(60,76,155,0.6); color: #fff; border: 1px solid rgba(88,104,184,0.4); }
+.badge--gold  { background: rgba(185,152,106,0.2); color: var(--nahua-gold); border: 1px solid rgba(185,152,106,0.35); }
+.badge--green { background: rgba(21,161,76,0.25); color: #1DC45E; border: 1px solid rgba(21,161,76,0.35); }
+
+/* ── GUÍA DE SIGNOS ── */
+.signos-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 16px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(185,152,106,0.2) transparent;
+}
+
+.signos-list-title {
+  font-family: var(--font-numbers);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--nahua-gold);
+  opacity: 0.7;
+  margin-bottom: 8px;
+  padding-top: 4px;
+}
+
+.signo-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.12s;
+  border: 1px solid transparent;
+}
+.signo-item:hover {
+  background: rgba(185,152,106,0.07);
+  border-color: rgba(185,152,106,0.15);
+}
+.signo-item.active {
+  background: rgba(60,76,155,0.25);
+  border-color: rgba(60,76,155,0.4);
+}
+.signo-item__num {
+  font-family: var(--font-numbers);
+  font-size: 9px;
+  color: var(--nahua-gold);
+  min-width: 20px;
+  opacity: 0.7;
+}
+.signo-item__emoji { font-size: 18px; }
+.signo-item__info { flex: 1; min-width: 0; }
+.signo-item__name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--nahua-white);
+  line-height: 1.2;
+}
+.signo-item__nahuatl {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+}
+
+/* ── SIDEBAR MOBILE COMPACT ── */
+@media (max-width: 768px) {
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid rgba(185,152,106,0.15);
+    max-height: 180px;
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .sidebar-header { padding: 12px 14px; border-bottom: none; border-right: 1px solid rgba(185,152,106,0.12); flex: 0 0 auto; }
+  .brand-logo { width: 110px; }
+  .brand-sub, .signos-list { display: none; }
+  .hoy-card { margin: 10px; flex: 1; }
+  .hoy-card::before { display: none; }
+}
+
+/* ── CHAT AREA ── */
+.chat-area {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-topbar {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(185,152,106,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(15,15,26,0.8);
+  backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+
+.chat-topbar-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--nahua-white);
+}
+.chat-topbar-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 1px;
+}
+
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--nahua-green);
+  box-shadow: 0 0 6px rgba(21,161,76,0.6);
+  display: inline-block;
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ── MESSAGES ── */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(185,152,106,0.2) transparent;
+}
+
+.msg {
+  display: flex;
+  gap: 10px;
+  max-width: 820px;
+}
+
+.msg--user { flex-direction: row-reverse; align-self: flex-end; }
+.msg--ai   { align-self: flex-start; }
+
+.msg__avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.msg--ai .msg__avatar {
+  background: linear-gradient(135deg, var(--nahua-navy), #4a2a7a);
+  border: 1px solid rgba(185,152,106,0.3);
+}
+
+.msg--user .msg__avatar {
+  background: rgba(185,152,106,0.15);
+  border: 1px solid rgba(185,152,106,0.3);
+  font-size: 13px;
+  color: var(--nahua-gold);
+  font-family: var(--font-numbers);
+  font-weight: 700;
+}
+
+.msg__bubble {
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  line-height: 1.65;
+  max-width: calc(100% - 50px);
+}
+
+.msg--ai .msg__bubble {
+  background: rgba(60,76,155,0.12);
+  border: 1px solid rgba(60,76,155,0.25);
+  color: rgba(255,255,255,0.9);
+  border-bottom-left-radius: 4px;
+}
+
+.msg--user .msg__bubble {
+  background: rgba(185,152,106,0.12);
+  border: 1px solid rgba(185,152,106,0.2);
+  color: rgba(255,255,255,0.9);
+  border-bottom-right-radius: 4px;
+}
+
+.msg__bubble strong { color: var(--nahua-gold); }
+.msg__bubble em { color: rgba(255,255,255,0.6); font-style: normal; font-size: 12px; }
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 4px 0;
+}
+.typing-indicator span {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--nahua-gold);
+  opacity: 0.4;
+  animation: blink 1.2s infinite;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.2; transform: scale(1); }
+  40% { opacity: 1; transform: scale(1.15); }
+}
+
+/* Welcome card inside chat */
+.welcome-card {
+  background: linear-gradient(135deg, rgba(60,76,155,0.2), rgba(42,26,90,0.3));
+  border: 1px solid rgba(185,152,106,0.2);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.welcome-card h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--nahua-white);
+  margin-bottom: 8px;
+}
+.welcome-card h2 span { color: var(--nahua-gold); }
+.welcome-card p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+.quick-prompts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(185,152,106,0.18);
+  border-radius: var(--radius-md);
+  color: rgba(255,255,255,0.75);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s;
+  width: 100%;
+}
+.quick-btn:hover {
+  background: rgba(185,152,106,0.08);
+  border-color: rgba(185,152,106,0.3);
+  color: var(--nahua-white);
+}
+.quick-btn span:first-child { font-size: 16px; }
+
+/* ── INPUT AREA ── */
+.input-area {
+  padding: 16px 24px 20px;
+  border-top: 1px solid rgba(185,152,106,0.1);
+  background: rgba(15,15,26,0.9);
+  flex-shrink: 0;
+}
+
+.input-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(185,152,106,0.2);
+  border-radius: var(--radius-lg);
+  padding: 10px 12px;
+  transition: border-color 0.15s;
+}
+.input-wrap:focus-within {
+  border-color: rgba(185,152,106,0.5);
+  background: rgba(255,255,255,0.06);
+}
+
+#user-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--nahua-white);
+  font-size: 14px;
+  font-family: var(--font-body);
+  resize: none;
+  max-height: 120px;
+  min-height: 22px;
+  line-height: 1.5;
+  padding: 0;
+}
+
+#user-input::placeholder { color: rgba(255,255,255,0.25); }
+
+.send-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--nahua-navy);
+  border: none;
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, transform 0.1s;
+  flex-shrink: 0;
+}
+.send-btn:hover { background: var(--nahua-navy-dark); }
+.send-btn:active { transform: scale(0.92); }
+.send-btn:disabled { opacity: 0.35; pointer-events: none; }
+
+.cancel-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(235,65,92,0.15);
+  border: 1px solid rgba(235,65,92,0.35);
+  color: var(--nahua-red);
+  font-size: 13px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s;
+  flex-shrink: 0;
+}
+.cancel-btn:hover { background: rgba(235,65,92,0.3); }
+.cancel-btn.visible { display: flex; }
+
+.input-hint {
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+  margin-top: 6px;
+  text-align: center;
+  font-family: var(--font-numbers);
+}
+
+/* ── KEY INPUT OVERLAY ── */
+.key-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,20,0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.key-box {
+  background: #12122A;
+  border: 1px solid rgba(185,152,106,0.25);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  max-width: 440px;
+  width: calc(100% - 32px);
+}
+.key-box h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--nahua-white);
+  margin-bottom: 6px;
+}
+.key-box h2 span { color: var(--nahua-gold); }
+.key-box p {
+  font-size: 13px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.key-input-wrap {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.key-input {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(185,152,106,0.3);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  color: var(--nahua-white);
+  font-family: var(--font-numbers);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.key-input:focus { border-color: rgba(185,152,106,0.6); }
+.key-btn {
+  background: var(--nahua-navy);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-family: var(--font-numbers);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: background 0.12s;
+  white-space: nowrap;
+}
+.key-btn:hover { background: var(--nahua-navy-dark); }
+.key-note {
+  font-size: 10px;
+  color: rgba(255,255,255,0.2);
+  font-family: var(--font-numbers);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(185,152,106,0.2); border-radius: 4px; }
+
+/* Load bar shimmer while compiling */
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+#load-bar.compiling {
+  background: linear-gradient(90deg, var(--nahua-navy), var(--nahua-gold), var(--nahua-navy-light), var(--nahua-gold));
+  background-size: 300% auto;
+  animation: shimmer 1.8s linear infinite;
+  width: 93% !important;
+  transition: none !important;
+}
+
+/* ── ICONOS SVG ── */
+.signo-icon {
+  width: 26px;
+  height: 26px;
+  filter: brightness(0) invert(1);
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+.hoy-icon {
+  width: 34px;
+  height: 34px;
+  filter: brightness(0) invert(80%) sepia(40%) saturate(400%) hue-rotate(5deg);
+}
+
+/* ── SETTINGS BUTTON ── */
+.settings-btn {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(185,152,106,0.2);
+  color: rgba(255,255,255,0.4);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.settings-btn:hover { border-color: rgba(185,152,106,0.5); color: var(--nahua-gold); }
+
+/* ── SETTINGS MODAL ── */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,20,0.85);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.settings-overlay.open { display: flex; }
+.settings-box {
+  background: #12122A;
+  border: 1px solid rgba(185,152,106,0.25);
+  border-radius: var(--radius-lg);
+  padding: 28px 28px 24px;
+  max-width: 440px;
+  width: calc(100% - 32px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+}
+.settings-api-label {
+  font-family: var(--font-numbers);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--nahua-gold);
+  opacity: 0.8;
+  margin-bottom: 6px;
+}
+.settings-box h2 {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--nahua-white);
+  margin-bottom: 4px;
+}
+.settings-box h2 span { color: var(--nahua-gold); }
+.settings-box p {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+.settings-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.settings-input {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(185,152,106,0.3);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  color: var(--nahua-white);
+  font-family: var(--font-numbers);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.settings-input:focus { border-color: rgba(185,152,106,0.6); }
+.settings-save {
+  background: var(--nahua-navy);
+  border: none;
+  border-radius: var(--radius-md);
+  color: #fff;
+  font-family: var(--font-numbers);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+.settings-save:hover { background: var(--nahua-navy-dark); }
+.settings-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+.settings-status {
+  font-size: 10px;
+  font-family: var(--font-numbers);
+  color: rgba(255,255,255,0.3);
+}
+.settings-status.active { color: #1DC45E; }
+.settings-clear {
+  font-size: 10px;
+  font-family: var(--font-numbers);
+  color: rgba(235,65,92,0.6);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+.settings-clear:hover { color: var(--nahua-red); }
+
+/* Mode toggle buttons */
+.mode-btn {
+  flex: 1;
+  min-width: 100px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(185,152,106,0.2);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.4);
+  font-family: var(--font-numbers);
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mode-btn:hover { border-color: rgba(185,152,106,0.4); color: rgba(255,255,255,0.7); }
+.mode-btn--active {
+  background: rgba(60,76,155,0.3);
+  border-color: rgba(88,104,184,0.5);
+  color: var(--nahua-white);
+}
+
+/* ── MARKDOWN RENDERED INSIDE AI BUBBLES ── */
+.md h1, .md h2, .md h3, .md h4 {
+  font-family: var(--font-display);
+  color: var(--nahua-white);
+  line-height: 1.25;
+  margin-top: 14px;
+  margin-bottom: 6px;
+}
+.md h1 { font-size: 20px; color: var(--nahua-gold); }
+.md h2 { font-size: 17px; color: var(--nahua-gold-light); }
+.md h3 { font-size: 14px; color: rgba(255,255,255,0.85); letter-spacing: 0.3px; }
+.md h4 { font-size: 13px; color: rgba(255,255,255,0.7); font-family: var(--font-numbers); text-transform: uppercase; letter-spacing: 1px; }
+
+.md p { margin-bottom: 10px; }
+.md p:last-child { margin-bottom: 0; }
+
+.md strong { color: var(--nahua-gold); font-weight: 700; }
+.md em { color: rgba(255,255,255,0.6); font-style: italic; }
+
+.md hr {
+  border: none;
+  border-top: 1px solid rgba(185,152,106,0.25);
+  margin: 14px 0;
+}
+
+.md ul, .md ol {
+  padding-left: 18px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.md ul { list-style: none; padding-left: 0; }
+.md ul li {
+  padding-left: 16px;
+  position: relative;
+}
+.md ul li::before {
+  content: '✦';
+  position: absolute;
+  left: 0;
+  color: var(--nahua-gold);
+  font-size: 8px;
+  top: 5px;
+  opacity: 0.7;
+}
+.md ol { list-style: decimal; }
+.md ol li { padding-left: 4px; }
+.md li { color: rgba(255,255,255,0.85); }
+
+.md code {
+  font-family: var(--font-numbers);
+  font-size: 12px;
+  background: rgba(185,152,106,0.1);
+  border: 1px solid rgba(185,152,106,0.2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  color: var(--nahua-gold-light);
+}
+
+.md blockquote {
+  border-left: 3px solid var(--nahua-gold);
+  margin: 10px 0;
+  padding: 8px 12px;
+  background: rgba(185,152,106,0.06);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  color: rgba(255,255,255,0.7);
+  font-style: italic;
+}
+
+.md :first-child { margin-top: 0; }
+.md :last-child { margin-bottom: 0; }
+</style>
+</head>
+<body>
+
+<!-- SETUP / LOADING OVERLAY -->
+<div class="key-overlay" id="load-overlay">
+
+  <!-- Panel A: API Key setup (default) -->
+  <div class="key-box" id="setup-panel" style="max-width:460px;text-align:center;">
+    <div style="font-size:36px;margin-bottom:10px;">✦</div>
+    <h2>Oráculo <span>Nahua</span></h2>
+    <p style="margin-bottom:18px;">Ingresa tu API Key de Anthropic o Google AI Studio para comenzar. Se guarda solo en tu navegador y puedes cambiarla con el botón ⚙.</p>
+    <div class="key-input-wrap" style="margin-bottom:8px;">
+      <input class="key-input" id="setup-api-key" type="password" placeholder="Claude: sk-ant-api03-…" autocomplete="off" onkeydown="if(event.key==='Enter')setupAndStart()">
+      <button class="key-btn" onclick="setupAndStart()">Comenzar</button>
+    </div>
+    <div class="key-input-wrap" style="margin-bottom:8px;">
+      <input class="key-input" id="setup-gemini-key" type="password" placeholder="Gemini: AIzaSy…" autocomplete="off" onkeydown="if(event.key==='Enter')setupAndStart()">
+    </div>
+    <div id="setup-error" style="font-size:11px;color:#EB415C;min-height:16px;margin-bottom:8px;"></div>
+    <div style="border-top:1px solid rgba(185,152,106,0.15);padding-top:12px;" id="local-model-section">
+      <button id="local-model-btn" onclick="startLocalModel()" style="background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;cursor:pointer;font-family:var(--font-numbers);letter-spacing:0.5px;">
+        💻 Usar modelo local Llama (requiere WebGPU)
+      </button>
+    </div>
+    <script>
+      // Detectar WebGPU sincrónicamente antes de pintar el botón
+      if (!navigator.gpu) {
+        document.getElementById('local-model-btn').outerHTML =
+          '<p style="font-size:10px;color:rgba(255,255,255,0.2);margin:0;font-family:var(--font-numbers)">⚠️ Tu navegador no soporta WebGPU — usa la API Key</p>';
+      }
+    </script>
+  </div>
+
+  <!-- Panel B: Progreso de carga del modelo local -->
+  <div class="key-box" id="progress-panel" style="max-width:460px;text-align:center;display:none;">
+    <div style="font-size:36px;margin-bottom:10px;">✦</div>
+    <h2>Cargando <span>Llama</span></h2>
+    <p id="load-status" style="margin-bottom:18px;">Iniciando modelo…<br><small style="color:rgba(255,255,255,0.3)">Con GPU: Llama 3.2 3B (~2 GB) · Sin GPU: Llama 3.2 1B (~700 MB). Queda en caché.</small></p>
+    <div style="background:rgba(255,255,255,0.06);border-radius:100px;height:6px;overflow:hidden;">
+      <div id="load-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--nahua-navy),var(--nahua-gold));border-radius:100px;transition:width 0.3s;"></div>
+    </div>
+    <div id="load-pct" style="font-family:var(--font-numbers);font-size:11px;color:var(--nahua-gold);margin-top:8px;">0%</div>
+    <button onclick="cancelLocalModel()" style="margin-top:16px;background:none;border:none;color:rgba(255,255,255,0.3);font-size:11px;cursor:pointer;font-family:var(--font-numbers);">
+      ← Volver y usar API Key
+    </button>
+  </div>
+
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="settings-overlay" id="settings-overlay" onclick="if(event.target===this)closeSettings()">
+  <div class="settings-box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+      <h2>Configuración de <span>API</span></h2>
+      <button onclick="closeSettings()" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:22px;cursor:pointer;padding:0;line-height:1;margin-top:-2px;" title="Cerrar">×</button>
+    </div>
+
+    <!-- Claude API -->
+    <div class="settings-api-label">Claude · Anthropic</div>
+    <p>Clave de Anthropic para usar Claude como oráculo. Respuestas ricas en español con profundidad cultural.<br>La clave se guarda solo en tu navegador.</p>
+    <div class="settings-row">
+      <input class="settings-input" id="api-key-input" type="password" placeholder="sk-ant-api03-…" autocomplete="off">
+      <button class="settings-save" onclick="saveClaudeKey()">Guardar</button>
+    </div>
+    <div class="settings-footer">
+      <span class="settings-status" id="settings-status">Sin clave activa</span>
+      <button class="settings-clear" id="settings-clear-btn" onclick="clearClaudeKey()" style="display:none">Eliminar clave</button>
+    </div>
+
+    <!-- Gemini API -->
+    <div style="border-top:1px solid rgba(185,152,106,0.12);padding-top:16px;margin-top:16px;">
+      <div class="settings-api-label">Gemini · Google AI</div>
+      <p>Clave de Google AI Studio. Opción gratuita, muy capaz y rápida.<br>La clave se guarda solo en tu navegador.</p>
+      <div class="settings-row">
+        <input class="settings-input" id="gemini-key-input" type="password" placeholder="AIzaSy…" autocomplete="off">
+        <button class="settings-save" onclick="saveGeminiKey()">Guardar</button>
+      </div>
+      <div class="settings-footer">
+        <span class="settings-status" id="gemini-status">Sin clave activa</span>
+        <button class="settings-clear" id="gemini-clear-btn" onclick="clearGeminiKey()" style="display:none">Eliminar clave</button>
+      </div>
+    </div>
+
+    <!-- Selector de modo -->
+    <div style="margin-top:16px;border-top:1px solid rgba(185,152,106,0.15);padding-top:14px;">
+      <div style="font-family:var(--font-numbers);font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">Modo activo</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <button id="mode-local-btn"  class="mode-btn mode-btn--active" onclick="setMode('local')">💻 Modelo local</button>
+        <button id="mode-claude-btn" class="mode-btn"                  onclick="setMode('claude')">🌐 Claude API</button>
+        <button id="mode-gemini-btn" class="mode-btn"                  onclick="setMode('gemini')">✨ Gemini API</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP LAYOUT -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-tag">Calendario Ritual</div>
+      <img src="iconos/logo.svg" class="brand-logo" alt="Tonalpohualli">
+      <div class="brand-sub">El calendario de los 260 días</div>
+    </div>
+
+    <!-- HOY CARD -->
+    <div class="hoy-card" id="hoy-card">
+      <div class="hoy-label">Hoy</div>
+      <div class="hoy-gregoriano" id="hoy-greg">Cargando…</div>
+      <div class="hoy-signo" id="hoy-signo">
+        <span class="signo-emoji" id="hoy-emoji">⏳</span>
+        <span id="hoy-nombre">—</span>
+      </div>
+      <div class="hoy-trecena" id="hoy-trecena">Trecena —</div>
+      <div class="hoy-badges" id="hoy-badges"></div>
+    </div>
+
+    <!-- GUÍA DE LOS 20 SIGNOS -->
+    <div class="signos-list">
+      <div class="signos-list-title">Los 20 Signos</div>
+      <div id="signos-index"></div>
+    </div>
+  </aside>
+
+  <!-- CHAT -->
+  <div class="chat-area">
+    <div class="chat-topbar">
+      <div>
+        <div class="chat-topbar-title"><span class="status-dot"></span>Oráculo Nahua</div>
+        <div class="chat-topbar-sub">Pregunta sobre tu día en el calendario de 260 tonos</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div id="model-badge" style="font-family:var(--font-numbers);font-size:9px;color:var(--nahua-gold);opacity:0.7;letter-spacing:1px;text-transform:uppercase;padding:5px 10px;border:1px solid rgba(185,152,106,0.15);border-radius:100px;">Cargando…</div>
+        <button class="settings-btn" onclick="openSettings()" title="Configurar API Key">⚙</button>
+      </div>
+    </div>
+
+    <div class="messages" id="messages">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+        <div class="welcome-card" id="welcome-card">
+          <h2>Soy <span>Tlamatini</span>, guardián del Tonalpohualli ✦</h2>
+          <p>Cuéntame algo que estás viviendo hoy — una decisión, una emoción, un encuentro — y te diré qué dice el calendario sagrado sobre ese momento. La lectura se basa en el signo del día, el número de la trecena y la energía del dios que rige este ciclo.</p>
+          <div class="quick-prompts">
+            <button class="quick-btn" onclick="sendQuick('Hoy tengo que tomar una decisión importante y no sé qué camino elegir. ¿Qué energía trae este día del Tonalpohualli para orientarme?')">
+              <span>🌀</span><span>Tengo una decisión difícil. ¿Qué dice el calendario?</span>
+            </button>
+            <button class="quick-btn" onclick="sendQuick('Me siento confundido con algo que pasó hoy. ¿Cómo interpreta el Tonalpohualli lo que estoy viviendo?')">
+              <span>💭</span><span>Algo me confunde. Interpreta este momento.</span>
+            </button>
+            <button class="quick-btn" onclick="sendQuick('¿Cuál es el signo del día de hoy, qué dios lo rige y qué energía trae la trecena actual?')">
+              <span>🌅</span><span>¿Qué signo y trecena rigen hoy?</span>
+            </button>
+            <button class="quick-btn" onclick="sendQuick('Quiero empezar algo nuevo hoy. ¿Es un buen día según el Tonalpohualli y qué me recomienda la energía del día?')">
+              <span>✨</span><span>Quiero empezar algo nuevo. ¿Es buen día?</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-wrap">
+        <textarea id="user-input" placeholder="Cuéntame lo que estás viviendo hoy para leer la energía del día…" rows="1" maxlength="800"></textarea>
+        <button class="cancel-btn" id="cancel-btn" title="Cancelar respuesta" onclick="cancelGeneration()">✕</button>
+        <button class="send-btn" id="send-btn" title="Enviar">➤</button>
+      </div>
+      <div class="input-hint">Enter para enviar · Shift+Enter para nueva línea</div>
+    </div>
+  </div>
+</div>
+
+
+<script type="module">
+/* ═══════════════════════════════════════════════════════
+   TONALPOHUALLI — DATOS DEL CALENDARIO
+   Fuente: cantosfloridos.mx/calendario-nahuatl
+   ══════════════════════════════════════════════════════ */
+
+let ICON_BASE = null; // se detecta en runtime
+
+window.iconFallback = function(el) {
+  const e = el.getAttribute('data-emoji');
+  const big = el.classList.contains('hoy-icon');
+  el.outerHTML = `<span style="font-size:${big ? '28' : '20'}px;line-height:1">${e}</span>`;
+};
+
+function iconImg(signo, cls) {
+  if (!ICON_BASE) {
+    const big = cls === 'hoy-icon';
+    return `<span style="font-size:${big ? '28' : '20'}px;line-height:1">${signo.emoji}</span>`;
+  }
+  return `<img src="${ICON_BASE}${signo.icon}" class="${cls}" alt="${signo.es}" data-emoji="${signo.emoji}" onerror="iconFallback(this)">`;
+}
+
+async function detectIconBase() {
+  try {
+    const r = await fetch('iconos/20_flor.svg', { method: 'HEAD' });
+    if (r.ok) { ICON_BASE = 'iconos/'; return; }
+  } catch {}
+  // Sin íconos SVG — usará emojis como fallback
+}
+
+const SIGNOS = [
+  { num:1,  nahuatl:'Cipactli',     es:'Cocodrilo',  icon:'1_caiman.svg',     emoji:'🐊', dios:'Tonacatecuhtli',   significado:'Inicio, energía primordial, sustento. El cocodrilo es la tierra sobre las aguas. Trae la fuerza creadora del cosmos: ideal para comenzar proyectos y afrontar retos con determinación.' },
+  { num:2,  nahuatl:'Ehecatl',      es:'Viento',     icon:'2_viento.svg',     emoji:'💨', dios:'Quetzalcóatl',     significado:'Movimiento, comunicación, espíritu. El viento es la voz de los dioses. Favorece los viajes, los intercambios y la expresión creativa. Energía inquieta y transformadora.' },
+  { num:3,  nahuatl:'Calli',        es:'Casa',       icon:'3_casa.svg',       emoji:'🏠', dios:'Tepeyollotl',      significado:'Hogar, protección, introspección. La cueva y el jaguar nocturno. Día para reflexionar, proteger lo propio y escuchar la voz interior.' },
+  { num:4,  nahuatl:'Cuetzpalin',   es:'Lagartija',  icon:'4_lagartija.svg',  emoji:'🦎', dios:'Huehuecóyotl',     significado:'Salud, abundancia, agilidad. La lagartija que se regenera. Energía lúdica y sanadora; buen día para cuidar el cuerpo y celebrar la vida.' },
+  { num:5,  nahuatl:'Coatl',        es:'Serpiente',  icon:'5_serpiente.svg',  emoji:'🐍', dios:'Chalchiuhtlicue',  significado:'Transformación, sabiduría, ciclos. La serpiente que muda la piel. Día de cambios profundos y revelaciones; lo viejo cae para que nazca algo nuevo.' },
+  { num:6,  nahuatl:'Miquiztli',    es:'Muerte',     icon:'6_muerte.svg',     emoji:'💀', dios:'Tecuciztécatl',    significado:'Regeneración, tránsito, luna. La muerte no es el fin sino la transformación. Día de introspección profunda y contacto con los ciclos eternos.' },
+  { num:7,  nahuatl:'Mazatl',       es:'Venado',     icon:'7_venado.svg',     emoji:'🦌', dios:'Tláloc',           significado:'Gracia, velocidad, sensibilidad. El venado es guía entre mundos. Energía libre y sensible; escucha tus instintos y confía en tu camino.' },
+  { num:8,  nahuatl:'Tochtli',      es:'Conejo',     icon:'8_conejo.svg',     emoji:'🐇', dios:'Mayahuel',         significado:'Fertilidad, alegría, abundancia. El conejo de la luna. Día festivo y creativo; la alegría compartida multiplica las bendiciones.' },
+  { num:9,  nahuatl:'Atl',          es:'Agua',       icon:'9_agua.svg',       emoji:'💧', dios:'Xiuhtecuhtli',     significado:'Fluidez, emoción, purificación. El agua da y quita vida. Día de limpiezas emocionales; fluye con los cambios en lugar de resistirlos.' },
+  { num:10, nahuatl:'Itzcuintli',   es:'Perro',      icon:'10_perro.svg',     emoji:'🐕', dios:'Mictlantecuhtli',  significado:'Lealtad, guía, compañía. El perro guía las almas al inframundo. Día para honrar vínculos, la amistad y la lealtad incondicional.' },
+  { num:11, nahuatl:'Ozomatli',     es:'Mono',       icon:'11_mono.svg',      emoji:'🐒', dios:'Xochipilli',       significado:'Arte, juego, creatividad. El mono es el patrono de las artes. Energía festiva y artística; día para crear, reír y dejarse llevar por la inspiración.' },
+  { num:12, nahuatl:'Malinalli',    es:'Hierba',     icon:'12_hierba.svg',    emoji:'🌿', dios:'Patécatl',         significado:'Resistencia, curación, conexión con la tierra. La hierba que siempre vuelve a crecer. Día de sanación y fortaleza interior.' },
+  { num:13, nahuatl:'Acatl',        es:'Caña',       icon:'13_acatl.svg', emoji:'🌾', dios:'Tezcatlipoca',     significado:'Autoridad, dirección, espejo humeante. La caña es el eje del mundo. Día de liderazgo y reflexión sobre el poder; lo que actúas hoy tiene eco en el cosmos.' },
+  { num:14, nahuatl:'Ocelotl',      es:'Jaguar',     icon:'14_jaguar.svg',    emoji:'🐆', dios:'Tlazoltéotl',      significado:'Fuerza nocturna, intuición, poder. El jaguar reina en la oscuridad. Día de gran poder instintivo; confía en tu sombra, ahí está tu mayor fortaleza.' },
+  { num:15, nahuatl:'Cuauhtli',     es:'Águila',     icon:'15_aguila.svg',    emoji:'🦅', dios:'Xipe Tótec',       significado:'Visión solar, valentía, renovación. El águila lleva los mensajes al sol. Día para elevar la mirada y ver el panorama completo de tu situación.' },
+  { num:16, nahuatl:'Cozcacuauhtli',es:'Zopilote',   icon:'16_zopilote.svg',  emoji:'🦅', dios:'Itzpapalotl',      significado:'Longevidad, sabiduría ancestral, purificación. El zopilote transforma la muerte en vida. Día de gran sabiduría; lo que termina abre espacio a lo nuevo.' },
+  { num:17, nahuatl:'Ollin',        es:'Movimiento', icon:'17_temblor.svg',   emoji:'🌀', dios:'Xólotl',           significado:'Terremoto, cambio, presente. Ollin es el nombre del quinto sol. Día de movimiento inevitable; suéltate a la corriente del cambio.' },
+  { num:18, nahuatl:'Técpatl',      es:'Pedernal',   icon:'18_pedernal.svg',  emoji:'🔪', dios:'Chalchiuhtotolin', significado:'Sacrificio, justicia, corte limpio. El pedernal da fuego y corta. Día para tomar decisiones firmes y separar lo que ya no sirve.' },
+  { num:19, nahuatl:'Quiahuitl',    es:'Lluvia',     icon:'19_lluvia.svg',    emoji:'🌧', dios:'Tonatiuh',         significado:'Fertilidad solar, tormenta, renovación. La lluvia que el sol llama. Día de emociones intensas y purificación; lo que cae riega lo que está por florecer.' },
+  { num:20, nahuatl:'Xochitl',      es:'Flor',       icon:'20_flor.svg',      emoji:'🌸', dios:'Xochiquétzal',     significado:'Belleza, amor, arte. La flor es el símbolo de la perfección. Día favorecido para la creatividad, el amor y todo lo que embellece la existencia.' },
+];
+
+// Correlación verificada: 1 enero 2024 = 3 Atl
+// Derivada de: 12 mayo 2026 (diff=862) → 7 Ozomatli (según cantosfloridos.mx)
+const EPOCH_GREGORIAN = new Date(2024, 0, 1); // 1 enero 2024
+const EPOCH_TONAL_IDX = 8;   // 8 = Atl (signo 9)
+const EPOCH_TONAL_NUM = 3;   // número 3 dentro de la trecena
+
+function getTonalDay(date) {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const e = new Date(EPOCH_GREGORIAN.getFullYear(), EPOCH_GREGORIAN.getMonth(), EPOCH_GREGORIAN.getDate());
+  const diff = Math.round((d - e) / 86400000);
+  
+  // Ciclo de 260 días
+  const cicloPos = ((diff % 260) + 260) % 260;
+  
+  // Signo: ciclo de 20
+  const signoIdx = (EPOCH_TONAL_IDX + diff) % 20;
+  const signo = SIGNOS[((signoIdx % 20) + 20) % 20];
+  
+  // Número de la trecena: ciclo de 13 (1-13)
+  const numTrecena = ((EPOCH_TONAL_NUM - 1 + diff) % 13 + 13) % 13 + 1;
+  
+  // Trecena actual (qué signo la abre)
+  // Cada trecena comienza en el día con número 1
+  // El signo que abre la trecena actual:
+  const diasDesdeInicioTrecena = numTrecena - 1;
+  const signoAperturaIdx = (((signoIdx - diasDesdeInicioTrecena) % 20) + 20) % 20;
+  const signoApertura = SIGNOS[signoAperturaIdx];
+  
+  // Número de trecena en el año (1-20 trecenas)
+  const numTrecenaTotal = Math.floor(cicloPos / 13) + 1;
+  
+  return {
+    signo,
+    numTrecena,
+    signoApertura,
+    numTrecenaTotal,
+    cicloPos: cicloPos + 1,
+    difDias: diff
+  };
+}
+
+function parseDatesFromText(text) {
+  const results = [];
+  const today = new Date();
+  const seen = new Set();
+  const MESES = {
+    'enero':0,'febrero':1,'marzo':2,'abril':3,'mayo':4,'junio':5,
+    'julio':6,'agosto':7,'septiembre':8,'octubre':9,'noviembre':10,'diciembre':11
+  };
+  const addDate = (label, d) => {
+    if (!isNaN(d.getTime()) && !seen.has(d.toDateString())) {
+      seen.add(d.toDateString());
+      results.push({ label, date: d });
+    }
+  };
+  if (/\b(hoy|este día|el día de hoy)\b/i.test(text))
+    addDate('hoy', new Date(today));
+  if (/\bmañana\b/i.test(text)) {
+    const d = new Date(today); d.setDate(d.getDate() + 1); addDate('mañana', d);
+  }
+  if (/\bayer\b/i.test(text)) {
+    const d = new Date(today); d.setDate(d.getDate() - 1); addDate('ayer', d);
+  }
+  if (/\bpasado mañana\b/i.test(text)) {
+    const d = new Date(today); d.setDate(d.getDate() + 2); addDate('pasado mañana', d);
+  }
+  const reNum = /\b(\d{1,2})\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)(?:\s+(?:de\s+|del\s+)?(\d{4}))?\b/gi;
+  let m;
+  while ((m = reNum.exec(text)) !== null) {
+    const day = parseInt(m[1]), mon = MESES[m[2].toLowerCase()];
+    const yr  = m[3] ? parseInt(m[3]) : today.getFullYear();
+    const d   = new Date(yr, mon, day);
+    if (d.getDate() === day)
+      addDate(`${day} de ${m[2]}${m[3] ? ' de ' + yr : ''}`, d);
+  }
+  const reIso = /\b(\d{4})-(\d{2})-(\d{2})\b/g;
+  while ((m = reIso.exec(text)) !== null)
+    addDate(m[0], new Date(parseInt(m[1]), parseInt(m[2])-1, parseInt(m[3])));
+  return results;
+}
+
+/* ── RENDERIZAR SIDEBAR ── */
+function initSidebar() {
+  const today = new Date();
+  const tonal = getTonalDay(today);
+  
+  // Fecha gregoriana
+  document.getElementById('hoy-greg').textContent = today.toLocaleDateString('es-MX', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+  
+  // Signo de hoy
+  document.getElementById('hoy-emoji').innerHTML = iconImg(tonal.signo, 'hoy-icon');
+  document.getElementById('hoy-nombre').textContent = `${tonal.numTrecena} ${tonal.signo.nahuatl}`;
+  document.getElementById('hoy-trecena').textContent = `Trecena de ${tonal.signoApertura.nahuatl} · Día ${tonal.cicloPos}/260`;
+  
+  const badgesEl = document.getElementById('hoy-badges');
+  badgesEl.innerHTML = `
+    <span class="badge badge--navy">${tonal.signo.es}</span>
+    <span class="badge badge--gold">${tonal.signoApertura.dios}</span>
+    <span class="badge badge--green">Día ${tonal.numTrecena}</span>
+  `;
+  
+  // Índice de signos
+  const idx = document.getElementById('signos-index');
+  idx.innerHTML = SIGNOS.map((s, i) => `
+    <div class="signo-item ${s.num === tonal.signo.num ? 'active' : ''}" onclick="sendQuick('Cuéntame sobre el signo nahua ${s.nahuatl} (${s.es}): su significado, su dios y qué energía trae.')">
+      <div class="signo-item__num">${String(s.num).padStart(2,'0')}</div>
+      <div class="signo-item__emoji">${iconImg(s, 'signo-icon')}</div>
+      <div class="signo-item__info">
+        <div class="signo-item__name">${s.es}</div>
+        <div class="signo-item__nahuatl">${s.nahuatl}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ── CHAT STATE ── */
+let conversationHistory = [];
+let isLoading = false;
+
+/* ── MODELO LOCAL VÍA WEB WORKER (no bloquea la UI) ── */
+let modelWorker = null;
+let modelReady  = false;
+let loadedBadge = 'Claude API';
+
+function setLoadStatus(text, pct, compiling = false) {
+  const s = document.getElementById('load-status');
+  const b = document.getElementById('load-bar');
+  const p = document.getElementById('load-pct');
+  if (s) s.innerHTML = text;
+  if (b) {
+    b.style.width = pct + '%';
+    b.classList.toggle('compiling', compiling);
+  }
+  if (p) p.textContent = compiling ? 'compilando…' : pct + '%';
+}
+
+function finishLoad(badgeText) {
+  loadedBadge = badgeText;
+  const overlay = document.getElementById('load-overlay');
+  overlay.style.transition = 'opacity 0.4s';
+  overlay.style.opacity = '0';
+  overlay.style.pointerEvents = 'none';
+  setTimeout(() => overlay.style.display = 'none', 420);
+  updateModeBadge();
+}
+
+function loadModel() {
+  // worker.js se sirve desde el mismo origen → caches API disponible
+  modelWorker = new Worker('./worker.js', { type: 'module' });
+
+  modelWorker.onmessage = ({ data: msg }) => {
+    if (msg.type === 'progress') {
+      setLoadStatus(
+        msg.text + (msg.sub ? `<br><small style="color:rgba(255,255,255,0.3)">${msg.sub}</small>` : ''),
+        msg.pct, msg.compiling
+      );
+    } else if (msg.type === 'loaded') {
+      modelReady = true;
+      finishLoad(msg.badge);
+    } else if (msg.type === 'load_error') {
+      setLoadStatus(
+        `<span style="color:#EB415C">❌ ${msg.message}</span>`, 0);
+    }
+  };
+
+  modelWorker.onerror = (e) => {
+    setLoadStatus(
+      `<span style="color:#EB415C">❌ Error iniciando worker</span><br>
+      <small style="color:rgba(255,255,255,0.3)">${e.message}<br>Usa la API Key de Claude (botón ⚙) como alternativa.</small>`, 0);
+  };
+
+  modelWorker.postMessage({ type: 'load', tryGPU: !!navigator.gpu });
+}
+
+function buildSystemPrompt(tonal, gregStr, extraDates = []) {
+  const catalog = SIGNOS.map(s =>
+    `${s.num}. ${s.nahuatl} (${s.es}) | Dios: ${s.dios} | ${s.significado}`
+  ).join('\n');
+
+  const extraSection = extraDates.length > 0
+    ? '\n\nOTRAS FECHAS CALCULADAS (usa estos datos exactos cuando el usuario pregunte por ellas):\n' +
+      extraDates.map(({ label, tonal: t, greg }) =>
+        `— ${label} (${greg}): ${t.numTrecena} ${t.signo.nahuatl} (${t.signo.es}) | Dios: ${t.signo.dios} | Trecena de ${t.signoApertura.nahuatl} regida por ${t.signoApertura.dios} | Día ${t.cicloPos}/260`
+      ).join('\n')
+    : '';
+
+  return `Eres Tlamatini, anciano sabio del pueblo nahua. SIEMPRE respondes en español mexicano. NUNCA en inglés. Ni una sola palabra en inglés.
+
+PERSONALIDAD: Hablas con la sabiduría de los abuelos mexica. Eres poético, cálido y profundo. No eres un asistente moderno — eres el guardián del Tonalpohualli, el calendario sagrado de 260 soles.
+
+HOY EN EL TONALPOHUALLI:
+Fecha gregoriana: ${gregStr}
+Signo del día: ${tonal.numTrecena} ${tonal.signo.nahuatl} (${tonal.signo.es})
+Dios del signo: ${tonal.signo.dios}
+Energía del signo: ${tonal.signo.significado}
+Posición en el ciclo sagrado: día ${tonal.cicloPos} de 260
+Trecena actual: número ${tonal.numTrecena} dentro de la trecena de ${tonal.signoApertura.nahuatl}, regida por ${tonal.signoApertura.dios}
+${extraSection}
+
+CÓMO LEER EL HORÓSCOPO DEL DÍA:
+Cuando el usuario comparte un acontecimiento (algo que está viviendo, una situación, un dilema, una emoción), tu lectura debe combinar estos tres elementos:
+1. El signo del día (${tonal.signo.nahuatl}) y la energía que trae
+2. El número ${tonal.numTrecena} de la trecena y la influencia de ${tonal.signoApertura.dios}
+3. El acontecimiento que describe el usuario
+
+Con esos tres elementos construyes una interpretación espiritual nahua del momento. NO preguntes fecha de nacimiento. La lectura es del día, no de la persona.
+
+LOS 20 SIGNOS (catálogo verificado — úsalos cuando pregunten por un signo específico):
+${catalog}
+
+REGLAS ABSOLUTAS:
+1. Siempre en español mexicano
+2. Máximo 200 palabras por respuesta
+3. Usa 1-2 palabras en náhuatl con traducción entre paréntesis
+4. Cuando el usuario comparta un acontecimiento, intégralo en la lectura
+5. Para fechas específicas, usa los datos de OTRAS FECHAS si aparecen arriba
+6. Mantén el tono de sabio indígena — poético, nunca genérico`;
+}
+
+function buildMessages(userMessage) {
+  const today = new Date();
+  const tonal = getTonalDay(today);
+  const gregStr = today.toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  // Include recent user turns so follow-up questions like "¿y ese día?" also resolve the date
+  const recentUserText = conversationHistory
+    .filter(m => m.role === 'user').slice(-2).map(m => m.content).join(' ');
+  const extraDates = parseDatesFromText(recentUserText + ' ' + userMessage)
+    .filter(({ date }) => date.toDateString() !== today.toDateString())
+    .map(({ label, date }) => ({
+      label,
+      tonal: getTonalDay(date),
+      greg: date.toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
+    }));
+
+  const primer = [
+    { role: 'user',      content: 'Hola' },
+    { role: 'assistant', content: `Tlazocamati (gracias) por acercarte al Tonalpohualli, caminante. Soy Tlamatini. Hoy es ${tonal.numTrecena} ${tonal.signo.nahuatl} — el ${tonal.signo.es} — bajo la trecena de ${tonal.signoApertura.nahuatl}, regida por ${tonal.signoApertura.dios}. Cuéntame lo que estás viviendo en este día y leeré la energía del cosmos para ti.` },
+  ];
+
+  return [
+    { role: 'system', content: buildSystemPrompt(tonal, gregStr, extraDates) },
+    ...primer,
+    ...conversationHistory.slice(-6),
+    { role: 'user', content: userMessage }
+  ];
+}
+
+/* ── MODO DE OPERACIÓN ── */
+let ANTHROPIC_API_KEY = localStorage.getItem('nahua_api_key') || '';
+let GEMINI_API_KEY    = localStorage.getItem('nahua_gemini_key') || '';
+// activeMode: 'local' | 'claude' | 'gemini'
+let activeMode = localStorage.getItem('nahua_active_mode') || 'local';
+
+function updateModeBadge() {
+  const badge = document.getElementById('model-badge');
+  if (activeMode === 'claude' && ANTHROPIC_API_KEY) {
+    badge.textContent = '🌐 Claude API';
+    badge.style.color = '#1DC45E';
+    badge.style.borderColor = 'rgba(21,161,76,0.3)';
+  } else if (activeMode === 'gemini' && GEMINI_API_KEY) {
+    badge.textContent = '✨ Gemini API';
+    badge.style.color = '#4FAAFF';
+    badge.style.borderColor = 'rgba(79,170,255,0.3)';
+  } else if (modelReady) {
+    badge.textContent = '💻 ' + loadedBadge;
+    badge.style.color = '';
+    badge.style.borderColor = '';
+  } else {
+    badge.textContent = 'Cargando…';
+    badge.style.color = '';
+    badge.style.borderColor = '';
+  }
+}
+
+function setMode(mode) {
+  if (mode === 'claude' && !ANTHROPIC_API_KEY) {
+    document.getElementById('api-key-input').focus();
+    return;
+  }
+  if (mode === 'gemini' && !GEMINI_API_KEY) {
+    document.getElementById('gemini-key-input').focus();
+    return;
+  }
+  activeMode = mode;
+  localStorage.setItem('nahua_active_mode', mode);
+  syncModeButtons();
+  updateModeBadge();
+}
+
+function syncModeButtons() {
+  const lb = document.getElementById('mode-local-btn');
+  const cb = document.getElementById('mode-claude-btn');
+  const gb = document.getElementById('mode-gemini-btn');
+  if (!lb) return;
+  lb.classList.toggle('mode-btn--active', activeMode === 'local');
+  if (cb) cb.classList.toggle('mode-btn--active', activeMode === 'claude' && !!ANTHROPIC_API_KEY);
+  if (gb) gb.classList.toggle('mode-btn--active', activeMode === 'gemini' && !!GEMINI_API_KEY);
+}
+
+function openSettings() {
+  document.getElementById('settings-overlay').classList.add('open');
+  if (ANTHROPIC_API_KEY) {
+    document.getElementById('api-key-input').placeholder = '••••••••• (key guardada)';
+    document.getElementById('settings-status').textContent = 'Key guardada';
+    document.getElementById('settings-status').className = 'settings-status active';
+    document.getElementById('settings-clear-btn').style.display = 'inline';
+  } else {
+    document.getElementById('api-key-input').placeholder = 'sk-ant-api03-…';
+    document.getElementById('settings-status').textContent = 'Sin clave activa';
+    document.getElementById('settings-status').className = 'settings-status';
+    document.getElementById('settings-clear-btn').style.display = 'none';
+  }
+  if (GEMINI_API_KEY) {
+    document.getElementById('gemini-key-input').placeholder = '••••••••• (key guardada)';
+    document.getElementById('gemini-status').textContent = 'Key guardada';
+    document.getElementById('gemini-status').className = 'settings-status active';
+    document.getElementById('gemini-clear-btn').style.display = 'inline';
+  } else {
+    document.getElementById('gemini-key-input').placeholder = 'AIzaSy…';
+    document.getElementById('gemini-status').textContent = 'Sin clave activa';
+    document.getElementById('gemini-status').className = 'settings-status';
+    document.getElementById('gemini-clear-btn').style.display = 'none';
+  }
+  syncModeButtons();
+}
+function closeSettings() {
+  document.getElementById('settings-overlay').classList.remove('open');
+}
+function saveClaudeKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val) return;
+  ANTHROPIC_API_KEY = val;
+  localStorage.setItem('nahua_api_key', val);
+  document.getElementById('api-key-input').value = '';
+  syncModeButtons();
+  updateModeBadge();
+  document.getElementById('settings-status').textContent = 'Key guardada — elige el modo abajo';
+  document.getElementById('settings-status').className = 'settings-status active';
+  document.getElementById('settings-clear-btn').style.display = 'inline';
+}
+function clearClaudeKey() {
+  ANTHROPIC_API_KEY = '';
+  if (activeMode === 'claude') { activeMode = 'local'; localStorage.setItem('nahua_active_mode', 'local'); }
+  localStorage.removeItem('nahua_api_key');
+  syncModeButtons();
+  updateModeBadge();
+  closeSettings();
+}
+function saveGeminiKey() {
+  const val = document.getElementById('gemini-key-input').value.trim();
+  if (!val) return;
+  GEMINI_API_KEY = val;
+  localStorage.setItem('nahua_gemini_key', val);
+  document.getElementById('gemini-key-input').value = '';
+  syncModeButtons();
+  updateModeBadge();
+  document.getElementById('gemini-status').textContent = 'Key guardada — elige el modo abajo';
+  document.getElementById('gemini-status').className = 'settings-status active';
+  document.getElementById('gemini-clear-btn').style.display = 'inline';
+}
+function clearGeminiKey() {
+  GEMINI_API_KEY = '';
+  if (activeMode === 'gemini') { activeMode = 'local'; localStorage.setItem('nahua_active_mode', 'local'); }
+  localStorage.removeItem('nahua_gemini_key');
+  syncModeButtons();
+  updateModeBadge();
+  closeSettings();
+}
+window.openSettings  = openSettings;
+window.closeSettings = closeSettings;
+window.saveClaudeKey = saveClaudeKey;
+window.clearClaudeKey = clearClaudeKey;
+window.saveGeminiKey = saveGeminiKey;
+window.clearGeminiKey = clearGeminiKey;
+window.setMode       = setMode;
+
+/* ── CANCELACIÓN ── */
+let apiAbortController = null;
+
+function setGenerating(on) {
+  document.getElementById('send-btn').disabled = on;
+  const cancelBtn = document.getElementById('cancel-btn');
+  if (on) cancelBtn.classList.add('visible');
+  else    cancelBtn.classList.remove('visible');
+}
+
+function cancelGeneration() {
+  if (apiAbortController) {
+    apiAbortController.abort();
+    apiAbortController = null;
+  }
+  if (modelWorker) {
+    modelWorker.postMessage({ type: 'cancel' });
+  }
+  isLoading = false;
+  setGenerating(false);
+}
+window.cancelGeneration = cancelGeneration;
+
+/* ── LLAMADA VÍA CLAUDE API (Anthropic) ── */
+async function callClaudeAPI(userMessage) {
+  isLoading = true;
+  setGenerating(true);
+  conversationHistory.push({ role: 'user', content: userMessage });
+  appendMessage('user', userMessage);
+
+  const aiDiv  = appendMessage('ai', '');
+  const bubble = aiDiv.querySelector('.msg__bubble');
+  bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+
+  const today   = new Date();
+  const tonal   = getTonalDay(today);
+  const gregStr = today.toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const recentUserText = conversationHistory
+    .filter(m => m.role === 'user').slice(-2).map(m => m.content).join(' ');
+  const extraDates = parseDatesFromText(recentUserText + ' ' + userMessage)
+    .filter(({ date }) => date.toDateString() !== today.toDateString())
+    .map(({ label, date }) => ({
+      label,
+      tonal: getTonalDay(date),
+      greg: date.toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
+    }));
+
+  apiAbortController = new AbortController();
+  let fullText = '';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: apiAbortController.signal,
+      headers: {
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 500,
+        system: buildSystemPrompt(tonal, gregStr, extraDates),
+        messages: [...conversationHistory.slice(-8, -1), { role: 'user', content: userMessage }],
+        stream: true,
+      })
+    });
+
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}));
+      if (resp.status === 429) {
+        throw new Error('Demasiadas peticiones a Claude. Espera unos segundos antes de continuar (límite del API gratuito).');
+      }
+      const hint = resp.status === 401 ? ' — revisa que la API key sea correcta'
+                 : resp.status === 403 ? ' — la key no tiene permisos'
+                 : '';
+      throw new Error((errData.error?.message || `HTTP ${resp.status}`) + hint);
+    }
+
+    bubble.innerHTML = '';
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (!data || data === '[DONE]') continue;
+        try {
+          const ev = JSON.parse(data);
+          if (ev.type === 'content_block_delta' && ev.delta?.type === 'text_delta') {
+            fullText += ev.delta.text;
+            bubble.innerHTML = parseMarkdown(fullText);
+            document.getElementById('messages').scrollTop = 999999;
+          }
+        } catch(e) {}
+      }
+    }
+
+    if (!fullText) fullText = 'El oráculo guarda silencio por ahora.';
+    conversationHistory.push({ role: 'assistant', content: fullText });
+    bubble.innerHTML = parseMarkdown(fullText);
+
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      bubble.innerHTML = parseMarkdown(`**Error de conexión:** ${err.message}`);
+      conversationHistory.pop();
+      console.error(err);
+    } else if (fullText) {
+      conversationHistory.push({ role: 'assistant', content: fullText });
+    } else {
+      conversationHistory.pop();
+      bubble.innerHTML = parseMarkdown('*Respuesta cancelada.*');
+    }
+  } finally {
+    apiAbortController = null;
+    isLoading = false;
+    setGenerating(false);
+  }
+}
+
+/* ── LLAMADA VÍA GEMINI API (Google) ── */
+async function callGeminiAPI(userMessage) {
+  isLoading = true;
+  setGenerating(true);
+  conversationHistory.push({ role: 'user', content: userMessage });
+  appendMessage('user', userMessage);
+
+  const aiDiv  = appendMessage('ai', '');
+  const bubble = aiDiv.querySelector('.msg__bubble');
+  bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+
+  const today   = new Date();
+  const tonal   = getTonalDay(today);
+  const gregStr = today.toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  const recentUserText = conversationHistory
+    .filter(m => m.role === 'user').slice(-2).map(m => m.content).join(' ');
+  const extraDates = parseDatesFromText(recentUserText + ' ' + userMessage)
+    .filter(({ date }) => date.toDateString() !== today.toDateString())
+    .map(({ label, date }) => ({
+      label,
+      tonal: getTonalDay(date),
+      greg: date.toLocaleDateString('es-MX', { weekday:'long', year:'numeric', month:'long', day:'numeric' })
+    }));
+
+  // Gemini usa role:'model' en vez de 'assistant', y systemInstruction separado
+  const primerContents = [
+    { role: 'user',  parts: [{ text: 'Hola' }] },
+    { role: 'model', parts: [{ text: `Tlazocamati (gracias) por acercarte al Tonalpohualli, caminante. Soy Tlamatini. Hoy es ${tonal.numTrecena} ${tonal.signo.nahuatl} — el ${tonal.signo.es} — bajo la trecena de ${tonal.signoApertura.nahuatl}, regida por ${tonal.signoApertura.dios}. Cuéntame lo que estás viviendo en este día y leeré la energía del cosmos para ti.` }] },
+  ];
+  const historyContents = conversationHistory
+    .slice(-8, -1)
+    .filter(m => m.role !== 'system')
+    .map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
+  const contents = [...primerContents, ...historyContents, { role: 'user', parts: [{ text: userMessage }] }];
+
+  apiAbortController = new AbortController();
+  let fullText = '';
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
+    const resp = await fetch(url, {
+      method: 'POST',
+      signal: apiAbortController.signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: buildSystemPrompt(tonal, gregStr, extraDates) }] },
+        contents,
+        generationConfig: { maxOutputTokens: 500, temperature: 0.85 }
+      })
+    });
+
+    if (!resp.ok) {
+      const errData = await resp.json().catch(() => ({}));
+      if (resp.status === 429) {
+        throw new Error('Demasiadas peticiones a Gemini. Espera unos segundos antes de continuar (límite del API gratuito: ~15 req/min).');
+      }
+      const hint = resp.status === 400 ? ' — revisa el formato de la solicitud'
+                 : resp.status === 403 ? ' — API key inválida o sin permisos'
+                 : '';
+      throw new Error((errData.error?.message || `HTTP ${resp.status}`) + hint);
+    }
+
+    bubble.innerHTML = '';
+    const reader  = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (!data || data === '[DONE]') continue;
+        try {
+          const ev    = JSON.parse(data);
+          const chunk = ev.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (chunk) {
+            fullText += chunk;
+            bubble.innerHTML = parseMarkdown(fullText);
+            document.getElementById('messages').scrollTop = 999999;
+          }
+        } catch(e) {}
+      }
+    }
+
+    if (!fullText) fullText = 'El oráculo guarda silencio por ahora.';
+    conversationHistory.push({ role: 'assistant', content: fullText });
+    bubble.innerHTML = parseMarkdown(fullText);
+
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      bubble.innerHTML = parseMarkdown(`**Error de conexión:** ${err.message}`);
+      conversationHistory.pop();
+      console.error(err);
+    } else if (fullText) {
+      conversationHistory.push({ role: 'assistant', content: fullText });
+    } else {
+      conversationHistory.pop();
+      bubble.innerHTML = parseMarkdown('*Respuesta cancelada.*');
+    }
+  } finally {
+    apiAbortController = null;
+    isLoading = false;
+    setGenerating(false);
+  }
+}
+
+/* ── LLAMADA AL MODELO ── */
+async function callClaude(userMessage) {
+  if (isLoading) return;
+  if (activeMode === 'claude' && ANTHROPIC_API_KEY) return callClaudeAPI(userMessage);
+  if (activeMode === 'gemini' && GEMINI_API_KEY)    return callGeminiAPI(userMessage);
+  if (!modelReady) return;
+
+  isLoading = true;
+  setGenerating(true);
+  conversationHistory.push({ role: 'user', content: userMessage });
+  appendMessage('user', userMessage);
+
+  const aiDiv  = appendMessage('ai', '');
+  const bubble = aiDiv.querySelector('.msg__bubble');
+  bubble.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+
+  let fullText = '';
+  try {
+    fullText = await callLocalModel(userMessage, bubble);
+    if (!fullText) fullText = 'El oráculo guarda silencio por ahora.';
+    conversationHistory.push({ role: 'assistant', content: fullText });
+    bubble.innerHTML = parseMarkdown(fullText);
+  } catch (err) {
+    if (fullText) {
+      conversationHistory.push({ role: 'assistant', content: fullText });
+    } else {
+      bubble.innerHTML = parseMarkdown(`**Error del modelo:** ${err.message}`);
+      conversationHistory.pop();
+      console.error(err);
+    }
+  } finally {
+    isLoading = false;
+    setGenerating(false);
+  }
+}
+
+async function callLocalModel(userMessage, bubble) {
+  return new Promise((resolve, reject) => {
+    let accumulated = '';
+    let firstToken  = true;
+
+    const handler = ({ data: msg }) => {
+      if (msg.type === 'token') {
+        if (firstToken) { bubble.innerHTML = ''; firstToken = false; }
+        accumulated += msg.token;
+        bubble.innerHTML = parseMarkdown(accumulated);
+        document.getElementById('messages').scrollTop = 999999;
+      } else if (msg.type === 'gen_done') {
+        modelWorker.removeEventListener('message', handler);
+        resolve(accumulated);
+      } else if (msg.type === 'gen_error') {
+        modelWorker.removeEventListener('message', handler);
+        reject(new Error(msg.message));
+      }
+    };
+
+    modelWorker.addEventListener('message', handler);
+    modelWorker.postMessage({ type: 'generate', messages: buildMessages(userMessage) });
+  });
+}
+  
+
+
+/* ── MARKDOWN PARSER ── */
+function parseMarkdown(text) {
+  // Escape HTML first to avoid XSS
+  const escape = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const lines = text.split('\n');
+  let html = '';
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Horizontal rule: ---, ***, ___
+    if (/^[-*_]{3,}\s*$/.test(line)) {
+      html += '<hr>';
+      i++; continue;
+    }
+
+    // Headings
+    const h4 = line.match(/^####\s+(.+)/);
+    const h3 = line.match(/^###\s+(.+)/);
+    const h2 = line.match(/^##\s+(.+)/);
+    const h1 = line.match(/^#\s+(.+)/);
+    if (h1) { html += `<h1>${inlineFormat(h1[1])}</h1>`; i++; continue; }
+    if (h2) { html += `<h2>${inlineFormat(h2[1])}</h2>`; i++; continue; }
+    if (h3) { html += `<h3>${inlineFormat(h3[1])}</h3>`; i++; continue; }
+    if (h4) { html += `<h4>${inlineFormat(h4[1])}</h4>`; i++; continue; }
+
+    // Blockquote
+    if (/^>\s?/.test(line)) {
+      let bq = '';
+      while (i < lines.length && /^>\s?/.test(lines[i])) {
+        bq += inlineFormat(lines[i].replace(/^>\s?/, '')) + ' ';
+        i++;
+      }
+      html += `<blockquote>${bq.trim()}</blockquote>`;
+      continue;
+    }
+
+    // Unordered list
+    if (/^[-*+]\s+/.test(line)) {
+      html += '<ul>';
+      while (i < lines.length && /^[-*+]\s+/.test(lines[i])) {
+        html += `<li>${inlineFormat(lines[i].replace(/^[-*+]\s+/, ''))}</li>`;
+        i++;
+      }
+      html += '</ul>';
+      continue;
+    }
+
+    // Ordered list
+    if (/^\d+\.\s+/.test(line)) {
+      html += '<ol>';
+      while (i < lines.length && /^\d+\.\s+/.test(lines[i])) {
+        html += `<li>${inlineFormat(lines[i].replace(/^\d+\.\s+/, ''))}</li>`;
+        i++;
+      }
+      html += '</ol>';
+      continue;
+    }
+
+    // Empty line → paragraph break (skip)
+    if (line.trim() === '') {
+      i++; continue;
+    }
+
+    // Paragraph: collect consecutive non-special lines
+    let para = '';
+    while (
+      i < lines.length &&
+      lines[i].trim() !== '' &&
+      !/^[#>*+\-]/.test(lines[i]) &&
+      !/^\d+\./.test(lines[i]) &&
+      !/^[-*_]{3,}\s*$/.test(lines[i])
+    ) {
+      para += (para ? ' ' : '') + inlineFormat(lines[i]);
+      i++;
+    }
+    if (para) html += `<p>${para}</p>`;
+  }
+
+  return html;
+}
+
+function inlineFormat(text) {
+  const escape = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return escape(text)
+    // inline code (before bold/italic to avoid conflicts)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // bold+italic
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    // bold
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    // italic *
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    // italic _
+    .replace(/_(.+?)_/g, '<em>$1</em>');
+}
+
+/* ── MENSAJES ── */
+function appendMessage(role, text) {
+  const welcomeCard = document.getElementById('welcome-card');
+  if (welcomeCard && welcomeCard.closest('.messages')) {
+    const parent = welcomeCard.closest('div[style]');
+    if (parent) parent.remove();
+  }
+  
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `msg msg--${role === 'user' ? 'user' : 'ai'}`;
+  
+  const avatar = role === 'user'
+    ? `<div class="msg__avatar">tú</div>`
+    : `<div class="msg__avatar">✦</div>`;
+
+  const bubbleContent = role === 'ai'
+    ? `<div class="msg__bubble md">${parseMarkdown(text)}</div>`
+    : `<div class="msg__bubble">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>`;
+  
+  div.innerHTML = `${avatar}${bubbleContent}`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+
+function appendTyping() {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg msg--ai';
+  div.id = 'typing-msg';
+  div.innerHTML = `
+    <div class="msg__avatar">✦</div>
+    <div class="msg__bubble">
+      <div class="typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
+    </div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing-msg');
+  if (t) t.remove();
+}
+
+
+function sendQuick(text) {
+  if (isLoading) return;
+  const ready = (activeMode === 'claude' && ANTHROPIC_API_KEY) || (activeMode === 'gemini' && GEMINI_API_KEY) || modelReady;
+  if (!ready) return;
+  callClaude(text);
+}
+window.sendQuick = sendQuick;
+
+/* ── INPUT ── */
+const inputEl = document.getElementById('user-input');
+const sendBtn = document.getElementById('send-btn');
+
+function autoResize() {
+  inputEl.style.height = 'auto';
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+}
+
+inputEl.addEventListener('input', autoResize);
+
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    if (!isLoading) {
+      const val = inputEl.value.trim();
+      if (val) {
+        inputEl.value = '';
+        autoResize();
+        callClaude(val);
+      }
+    }
+  }
+});
+
+sendBtn.addEventListener('click', () => {
+  const val = inputEl.value.trim();
+  if (val && !isLoading) {
+    inputEl.value = '';
+    autoResize();
+    callClaude(val);
+  }
+});
+
+/* ── FUNCIONES DE SETUP ── */
+function setupAndStart() {
+  const claudeVal = document.getElementById('setup-api-key').value.trim();
+  const geminiVal = document.getElementById('setup-gemini-key')?.value.trim() || '';
+  const errEl = document.getElementById('setup-error');
+  if (!claudeVal && !geminiVal) {
+    errEl.textContent = 'Ingresa al menos una API Key para continuar.';
+    return;
+  }
+  let badge = '';
+  if (claudeVal) {
+    ANTHROPIC_API_KEY = claudeVal;
+    localStorage.setItem('nahua_api_key', claudeVal);
+    activeMode = 'claude';
+    badge = 'Claude API';
+  }
+  if (geminiVal) {
+    GEMINI_API_KEY = geminiVal;
+    localStorage.setItem('nahua_gemini_key', geminiVal);
+    if (!badge) { activeMode = 'gemini'; badge = 'Gemini API'; }
+  }
+  localStorage.setItem('nahua_active_mode', activeMode);
+  errEl.textContent = '';
+  syncModeButtons();
+  finishLoad(badge);
+}
+
+function startLocalModel() {
+  if (location.protocol === 'file:') {
+    document.getElementById('setup-error').textContent = 'El modelo local requiere servidor HTTP (npx serve .).';
+    return;
+  }
+  document.getElementById('setup-panel').style.display = 'none';
+  document.getElementById('progress-panel').style.display = 'block';
+  loadModel();
+}
+
+function cancelLocalModel() {
+  if (modelWorker) { modelWorker.terminate(); modelWorker = null; }
+  modelReady = false;
+  document.getElementById('progress-panel').style.display = 'none';
+  document.getElementById('setup-panel').style.display = 'block';
+  document.getElementById('load-bar').style.width = '0%';
+  document.getElementById('load-pct').textContent = '0%';
+}
+
+window.setupAndStart   = setupAndStart;
+window.startLocalModel = startLocalModel;
+window.cancelLocalModel = cancelLocalModel;
+
+/* ── INIT ── */
+(async () => {
+  await detectIconBase();
+  initSidebar();
+
+  if (activeMode === 'claude' && ANTHROPIC_API_KEY) {
+    finishLoad('Claude API');
+  } else if (activeMode === 'gemini' && GEMINI_API_KEY) {
+    finishLoad('Gemini API');
+  } else if (ANTHROPIC_API_KEY) {
+    // Migración: tenía key de Claude pero no activeMode guardado
+    activeMode = 'claude';
+    localStorage.setItem('nahua_active_mode', 'claude');
+    finishLoad('Claude API');
+  } else if (GEMINI_API_KEY) {
+    activeMode = 'gemini';
+    localStorage.setItem('nahua_active_mode', 'gemini');
+    finishLoad('Gemini API');
+  }
+  // Sin key → el overlay queda visible mostrando el panel de setup
+
+  syncModeButtons();
+  updateModeBadge();
+})();
+</script>
+</body>
+</html>
